@@ -3,7 +3,9 @@ PyCelegans
 ==========
 
 Parallel image processing code that identifies C. elegans in images.
+
 Includes generative statistical algorithm for complex postures.
+
 Includes example scripts for post-processing.
 
 
