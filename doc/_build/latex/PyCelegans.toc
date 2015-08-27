@@ -1,0 +1,9 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}background}{1}{chapter.1}
+\contentsline {chapter}{\numberline {2}creatediffimage}{2}{chapter.2}
+\contentsline {chapter}{\numberline {3}preprocessajp}{3}{chapter.3}
+\contentsline {chapter}{\numberline {4}collectoutput}{4}{chapter.4}
+\contentsline {chapter}{\numberline {5}util}{5}{chapter.5}
+\contentsline {chapter}{\numberline {6}Module pycelegans}{6}{chapter.6}
+\contentsline {chapter}{Python Module Index}{10}{section*.35}
+\contentsline {chapter}{Index}{11}{section*.36}

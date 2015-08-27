@@ -1,0 +1,93 @@
+
+########################################################################
+#  Author: Dylan Hall | dylanphall@uchicago.edu                             
+#  The University of Chicago Research Computing Center                         
+#                                                                              
+#  Wrapper script for Mplayer / Mencoder to encode a directory of 
+#  images into a movie.
+#  Expects at least an input directory to be give, uses defaults for
+#  other values (output, framerate, filetype, output filename)
+########################################################################
+
+source /etc/profile.d/modules.sh
+module load mplayer
+
+usageMessage="
+Usage: wormmovie 
+    -h, --help                    Show this message
+    -v, --verbose                 Show this message
+    -u, --usage                   Show this message
+
+    -i, --input <directory>       Sets the input directory (default \"./input\")
+    -d, --directory <directory>   Sets the output directory (default \"./movie-<input dir>\")
+    -m, --mode <avi|mp4>          Specifies type of file to generate (default avi)
+    -p, --fps <integer>           Specifies the frames per second (default 15)
+    -f, --file-type <program>     Specifies the type of file to encode (default jpg)"
+
+
+#in_folder=$1
+#mode=${2:-avi}
+#out_folder=${3:-movie-${in_folder}}
+#fraPerSec=${4:-15}
+#file_type=${6:-jpg}
+
+in_folder=images
+mode=avi
+out_folder=movie-${in_folder}
+fraPerSec=15
+file_type=jpg
+
+while true; do
+  case "$1" in
+    -v | --verbose ) echo "${usageMessage}"; exit 1; shift ;;
+    -h | --help )  echo "${usageMessage}"; exit 1; shift ;;
+    -u | --usage )  echo "${usageMessage}"; exit 1; shift ;;
+
+    -i|--input ) 
+        in_folder="$2"
+        echo "Input Dir = ${in_folder}"; shift 2 ;;
+    -d|--directory ) 
+        out_folder="$2"
+        echo "Output Dir = ${out_folder}"; shift 2 ;;
+    -m|--mode )
+        mode="$2"
+        echo "mode = ${mode}"; shift 2 ;;
+    -p|--fps )
+        fraPerSec="$2"
+        echo "FPS = ${fraPerSec}"; shift 2 ;;
+    -f|--file-type )
+        file_type="$2"
+        echo "File Type = ${file_type}"; shift 2 ;;
+    --) shift; break ;;
+    * ) break ;;
+  esac
+done
+
+echo "Input Dir  | ${in_folder}"
+echo "Output Dir | ${out_folder}"
+echo "Mode       | ${mode}"
+echo "FPS        | ${fraPerSec}"
+echo "file_type  | ${file_type}"
+
+#if [ $# -gt 6 ]; then
+#  printf "Usage: %s <input folder> <output folder> <fps> <movie title append> <file type>" "$0"
+#  exit 1
+#fi
+
+if [ ! -d ${in_folder} ]; then
+  printf "<%s> must be a directory" "${in_folder}"
+  exit 1;
+fi
+if [ ! -e ${out_folder} ]; then #makes output folder directory if does not exist
+  mkdir -p ${out_folder}
+fi
+if [ ${mode} == "mp4" ]
+then
+  #mp4 - quicktime compatible
+  mencoder "mf://"${in_folder}"/*."${file_type}"" -mf fps=${fraPerSec} -o "${out_folder}"/movie-"${in_folder}"-fps"${fraPerSec}"-quicktime.mp4 -ovc x264 -x264encopts crf=18:nofast_pskip:nodct_decimate:nocabac:global_header:threads=4 -of lavf -lavfopts format=mp4
+fi
+if [ ${mode} == "avi" ]
+then
+  #avi - vlc / all others compatible, default mode
+  mencoder "mf://"${in_folder}"/*."${file_type}"" -mf fps=${fraPerSec} -o "${out_folder}"/movie-"${in_folder}"-fps"${fraPerSec}".avi -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=9216000
+fi

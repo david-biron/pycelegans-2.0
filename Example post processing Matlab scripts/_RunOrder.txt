@@ -1,0 +1,13 @@
+333…3 (99 times) / 3 = 111…1 (99 times)
+
+111 / 3 = 37 , 111000 / 3 = 37000 , 111000000 / 3 = 37000000 , …
+-> 111…1 (99 times) / 3 = 370370370…37 where “37” appears 33 times. The rest of the digits are zeros. 
+
+-> Sum of digits = (3+7) x 33 = 330. 
+
+300 is NOT divisible by 9
+-> 370370370…37 is NOT divisible by 9
+->  111…1 (99 times)is NOT divisible by 27
+-> 333…3 (99 times) is NOT divisible by 81
+
+QED

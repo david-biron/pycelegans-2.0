@@ -1,0 +1,33 @@
+\indexentry{postprocess (module)|hyperpage}{7}
+\indexentry{main() (in module postprocess)|hyperpage}{7}
+\indexentry{importdata (module)|hyperpage}{8}
+\indexentry{getnosedist() (in module importdata)|hyperpage}{8}
+\indexentry{main() (in module importdata)|hyperpage}{8}
+\indexentry{readnosetail() (in module importdata)|hyperpage}{8}
+\indexentry{checklength (module)|hyperpage}{9}
+\indexentry{checklength() (in module checklength)|hyperpage}{9}
+\indexentry{main() (in module checklength)|hyperpage}{9}
+\indexentry{flipheadtail (module)|hyperpage}{10}
+\indexentry{checkflips() (in module flipheadtail)|hyperpage}{10}
+\indexentry{evalpolyfit() (in module flipheadtail)|hyperpage}{10}
+\indexentry{main() (in module flipheadtail)|hyperpage}{10}
+\indexentry{makepolyfit() (in module flipheadtail)|hyperpage}{11}
+\indexentry{splinefit (module)|hyperpage}{12}
+\indexentry{evalbspline() (in module splinefit)|hyperpage}{12}
+\indexentry{main() (in module splinefit)|hyperpage}{12}
+\indexentry{makebspline() (in module splinefit)|hyperpage}{12}
+\indexentry{calc (module)|hyperpage}{14}
+\indexentry{fullmovingavg() (in module calc)|hyperpage}{14}
+\indexentry{moving() (in module calc)|hyperpage}{14}
+\indexentry{window() (in module calc)|hyperpage}{14}
+\indexentry{parseargs (module)|hyperpage}{15}
+\indexentry{addchecklength() (in module parseargs)|hyperpage}{15}
+\indexentry{addflipheadtail() (in module parseargs)|hyperpage}{15}
+\indexentry{addimportdata() (in module parseargs)|hyperpage}{15}
+\indexentry{addsplinefit() (in module parseargs)|hyperpage}{15}
+\indexentry{main() (in module parseargs)|hyperpage}{15}
+\indexentry{readwrite (module)|hyperpage}{16}
+\indexentry{readtxt() (in module readwrite)|hyperpage}{16}
+\indexentry{reformat() (in module readwrite)|hyperpage}{16}
+\indexentry{savemat() (in module readwrite)|hyperpage}{16}
+\indexentry{writetxt() (in module readwrite)|hyperpage}{16}

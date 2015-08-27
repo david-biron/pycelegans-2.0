@@ -1,0 +1,68 @@
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter B
+  \item background (module), \hyperpage{1}
+
+  \indexspace
+  \bigletter C
+  \item collectoutput (module), \hyperpage{3}
+  \item creatediffimage (module), \hyperpage{1}
+
+  \indexspace
+  \bigletter F
+  \item fill\_object() (in module libcelegans), \hyperpage{6}
+  \item find\_true\_neighbors() (in module libcelegans), \hyperpage{6}
+
+  \indexspace
+  \bigletter G
+  \item get\_absolute\_pixel\_neighbors() (in module libcelegans), \hyperpage{6}
+  \item get\_biggest\_object() (in module libcelegans), \hyperpage{7}
+  \item get\_border() (in module libcelegans), \hyperpage{7}
+  \item get\_data\_chunks() (in module libutil), \hyperpage{5}
+  \item get\_distance() (in module libcelegans), \hyperpage{7}
+  \item get\_file\_names() (in module libutil), \hyperpage{5}
+  \item get\_image() (in module libcelegans), \hyperpage{7}
+  \item get\_midline() (in module libcelegans), \hyperpage{7}
+  \item get\_point\_list() (in module libcelegans), \hyperpage{8}
+  \item get\_relative\_pixel\_neighbors() (in module libcelegans), \hyperpage{8}
+  \item get\_side\_paths() (in module libcelegans), \hyperpage{8}
+  \item get\_thresh() (in module libcelegans), \hyperpage{8}
+
+  \indexspace
+  \bigletter L
+  \item libcelegans (module), \hyperpage{5}
+  \item libutil (module), \hyperpage{4}
+
+  \indexspace
+  \bigletter M
+  \item makedir() (in module libutil), \hyperpage{5}
+
+  \indexspace
+  \bigletter P
+  \item perform\_head\_tail\_intensity\_test() (in module libcelegans), \hyperpage{8}
+  \item perform\_head\_tail\_volume\_test() (in module libcelegans), \hyperpage{9}
+  \item Point (class in libcelegans), \hyperpage{6}
+  \item preprocessajp (module), \hyperpage{2}
+
+  \indexspace
+  \bigletter S
+  \item save\_wormviz\_image() (in module libcelegans), \hyperpage{9}
+  \item score (libcelegans.WormBorderPoint attribute), \hyperpage{6}
+  \item split\_list() (in module libutil), \hyperpage{5}
+
+  \indexspace
+  \bigletter W
+  \item WormBorderPoint (class in libcelegans), \hyperpage{6}
+
+  \indexspace
+  \bigletter X
+  \item x (libcelegans.Point attribute), \hyperpage{6}
+  \item x (libcelegans.WormBorderPoint attribute), \hyperpage{6}
+
+  \indexspace
+  \bigletter Y
+  \item y (libcelegans.Point attribute), \hyperpage{6}
+  \item y (libcelegans.WormBorderPoint attribute), \hyperpage{6}
+
+\end{theindex}

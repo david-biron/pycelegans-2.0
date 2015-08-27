@@ -1,0 +1,15 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Overview and Usage}{1}{chapter.1}
+\contentsline {chapter}{\numberline {2}Run integrity checks}{3}{chapter.2}
+\contentsline {chapter}{\numberline {3}Fit to smoothing spline}{5}{chapter.3}
+\contentsline {chapter}{\numberline {4}\texttt {postprocess} Module}{7}{chapter.4}
+\contentsline {chapter}{\numberline {5}\texttt {importdata} Module}{8}{chapter.5}
+\contentsline {chapter}{\numberline {6}\texttt {checklength} Module}{9}{chapter.6}
+\contentsline {chapter}{\numberline {7}\texttt {flipheadtail} Module}{10}{chapter.7}
+\contentsline {chapter}{\numberline {8}\texttt {splinefit} Module}{12}{chapter.8}
+\contentsline {chapter}{\numberline {9}\texttt {calc} Module}{14}{chapter.9}
+\contentsline {chapter}{\numberline {10}\texttt {parseargs} Module}{15}{chapter.10}
+\contentsline {chapter}{\numberline {11}\texttt {readwrite} Module}{16}{chapter.11}
+\contentsline {chapter}{\numberline {12}Indices and tables}{17}{chapter.12}
+\contentsline {chapter}{Python Module Index}{18}{section*.28}
+\contentsline {chapter}{Index}{19}{section*.29}

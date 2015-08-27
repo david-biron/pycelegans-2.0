@@ -1,0 +1,69 @@
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter A
+  \item addchecklength() (in module parseargs), \hyperpage{15}
+  \item addflipheadtail() (in module parseargs), \hyperpage{15}
+  \item addimportdata() (in module parseargs), \hyperpage{15}
+  \item addsplinefit() (in module parseargs), \hyperpage{15}
+
+  \indexspace
+  \bigletter C
+  \item calc (module), \hyperpage{14}
+  \item checkflips() (in module flipheadtail), \hyperpage{10}
+  \item checklength (module), \hyperpage{9}
+  \item checklength() (in module checklength), \hyperpage{9}
+
+  \indexspace
+  \bigletter E
+  \item evalbspline() (in module splinefit), \hyperpage{12}
+  \item evalpolyfit() (in module flipheadtail), \hyperpage{10}
+
+  \indexspace
+  \bigletter F
+  \item flipheadtail (module), \hyperpage{10}
+  \item fullmovingavg() (in module calc), \hyperpage{14}
+
+  \indexspace
+  \bigletter G
+  \item getnosedist() (in module importdata), \hyperpage{8}
+
+  \indexspace
+  \bigletter I
+  \item importdata (module), \hyperpage{8}
+
+  \indexspace
+  \bigletter M
+  \item main() (in module checklength), \hyperpage{9}
+  \item main() (in module flipheadtail), \hyperpage{10}
+  \item main() (in module importdata), \hyperpage{8}
+  \item main() (in module parseargs), \hyperpage{15}
+  \item main() (in module postprocess), \hyperpage{7}
+  \item main() (in module splinefit), \hyperpage{12}
+  \item makebspline() (in module splinefit), \hyperpage{12}
+  \item makepolyfit() (in module flipheadtail), \hyperpage{11}
+  \item moving() (in module calc), \hyperpage{14}
+
+  \indexspace
+  \bigletter P
+  \item parseargs (module), \hyperpage{15}
+  \item postprocess (module), \hyperpage{7}
+
+  \indexspace
+  \bigletter R
+  \item readnosetail() (in module importdata), \hyperpage{8}
+  \item readtxt() (in module readwrite), \hyperpage{16}
+  \item readwrite (module), \hyperpage{16}
+  \item reformat() (in module readwrite), \hyperpage{16}
+
+  \indexspace
+  \bigletter S
+  \item savemat() (in module readwrite), \hyperpage{16}
+  \item splinefit (module), \hyperpage{12}
+
+  \indexspace
+  \bigletter W
+  \item window() (in module calc), \hyperpage{14}
+  \item writetxt() (in module readwrite), \hyperpage{16}
+
+\end{theindex}

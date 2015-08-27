@@ -1,0 +1,755 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>PyCelegans PostProcess Documentation &mdash; PyCelegans PostProcess 0.5.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="PyCelegans PostProcess 0.5.2 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">PyCelegans PostProcess 0.5.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pycelegans-postprocess-documentation">
+<h1>PyCelegans PostProcess Documentation<a class="headerlink" href="#pycelegans-postprocess-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<div class="section" id="overview-and-usage">
+<h2>Overview and Usage<a class="headerlink" href="#overview-and-usage" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of the functions in this module are to check the output of
+PyCelegans and to format it for downstream data analysis. The post-processing
+code is run in two independent modes: <strong>check</strong> and <strong>spline</strong>.</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">...</span></tt></p>
+<p>The new integrity checks introduced are:</p>
+<ul class="simple">
+<li>Find frames where the midline length changes drastically</li>
+<li>Find frames where the head and tail have been misidentified</li>
+</ul>
+<p>In addition, integrity checks from PyCelegans are included:</p>
+<ul class="simple">
+<li>Frames of looped worms</li>
+</ul>
+<p>To identify frames that do not fit the length requirements, the <tt class="docutils literal"><span class="pre">checklength</span></tt> module calculates the average length of the worm midline over a sliding window, and locates frames whose length deviates significantly from this value. This comparison can be performed in two modes: <em>relative</em> (thresholded by number of standard deviations away from the mean) or <em>absolute</em> (thresholded by actual deviation in length away from the mean).</p>
+<p>To locate frames where the head/tail orientation is flipped, the <tt class="docutils literal"><span class="pre">flipheadtail</span></tt> module compares the current frame either (A) to the surrounding frames in a sliding window or (B) to just the previous frame. If (A), it fits each midline to a polynomial, resulting in <em>m</em> x 2 (where <em>m</em> is the degree of the polynomial) coefficients for each frame. These coefficients are averaged over a sliding window, and the values for each individual frame compared to this mean to find frames where the posture deviates significantly from the local value. This process is performed iteratively to account for outliers, but still relies upon the assumption that the majority of the frames within the window are correct. If the score calculate by comparing the coefficients for one frame to the local average is greater than a maximum threshold, the midline is flipped. If it is less than a minimum threshold, nothing happens. If the score falls between the minimum and maximum thresholds, it is (optionally) marked as &#8220;indeterminate&#8221; and rejected from further analysis. If (B), it compares the total distance between each point along the current midline and the midline of the previous frame, oriented either head-to-tail or tail-to-head. If the latter number is smaller, a flip is identified.</p>
+<p>After running the post-process module in <tt class="docutils literal"><span class="pre">check</span></tt> mode, the number of frames that passed each check will be printed. The outputs of each integrity check are saved as a .txt file in the original <tt class="docutils literal"><span class="pre">properties</span></tt> directory.</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">...</span></tt></p>
+<p>The midline is fit to a smoothing B-spline, with the option to include the results of the integrity checks. The integrity checks are included in two steps: bad frames may be rejected, and flipped worms may optionally be reoriented. If any integrity checks are missing, they are simply ignored; i.e., if <tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span></tt> if run before <tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span></tt>, only the <tt class="docutils literal"><span class="pre">is_loop</span></tt> criterion will be used. The length of the midline is also calculated by evaluating the integral of (<em>dx</em><sup>2</sup> + <em>dy</em><sup>2</sup>) <sup>1/2</sup> along the midline. The sidepaths may be optionally splined, resulting in a closed B-spline that defines the perimeter of the worm. In this case the worm area is also calculated, by evaluating the integral of (<em>xdy</em> &#8211; <em>ydx</em>) / 2 along the worm perimeter. These values, along with their corresponding frame number, are finally exported to a .mat file for analysis in Matlab. <em>Note:</em> the format of the Matlab ouput will depend upon how the splines are generated; if a constant number of points are used then the midline and sidepaths will be matrices of size <em>m</em> x <em>n</em> x 2 where <em>m</em> is the number of frames (that passed all integrity checks, if used) and <em>n</em> is the number of points in the spline. If  constant spacing is used, <em>n</em> may vary so the results will be cells.</p>
+<p>After running the post-process module in <tt class="docutils literal"><span class="pre">spline</span></tt> mode, the number of frames that threw no error will be printed. If analyzing data from the <tt class="docutils literal"><span class="pre">./properties</span></tt> directory, the splined .txt files will be saved to a separate directory as well as to a .mat file (by default, <tt class="docutils literal"><span class="pre">./processed</span></tt> and <tt class="docutils literal"><span class="pre">./processed.mat</span></tt>, respectively).</p>
+</div>
+<div class="section" id="run-integrity-checks">
+<h2>Run integrity checks<a class="headerlink" href="#run-integrity-checks" title="Permalink to this headline">¶</a></h2>
+<p>To view the help section for the integrity checks, type</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">--help</span></tt></p>
+<p>which will display:</p>
+<div class="highlight-python"><pre>usage: postprocess.py check [-h] [-p PROPERTIES] [-f FRAME_RANGE FRAME_RANGE]
+                            [-v {0,1}] [-ls LEN_SPAN]
+                            [-lv LEN_MAX_VAL | -ld LEN_MAX_DEV]
+                            [-fd FLIP_DEGREE] [-fi FLIP_ITERS] [-fs FLIP_SPAN]
+                            [-fl FLIP_MIN_DEV] [-fu FLIP_MAX_DEV]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PROPERTIES, --properties PROPERTIES
+                        properties directory; default = ./properties
+  -f FRAME_RANGE FRAME_RANGE, --frame_range FRAME_RANGE FRAME_RANGE
+                        frame range, given as [first frame, last frame);
+                        default = '0 inf'
+  -v {0,1}, --version {0,1}
+                        version of process code used to find midline (0 =
+                        Nick's, 1 = Marc's); default = 0
+  -ls LEN_SPAN, --len_span LEN_SPAN
+                        size of window used to check lengths, over which the
+                        average worm length should be constant; default = 6000
+  -lv LEN_MAX_VAL, --len_max_val LEN_MAX_VAL
+                        maximum allowed value of length outside of average
+                        value in the moving window set by the span, set as a
+                        percentage; set this value but not len_max_dev to use
+                        an absolute value of the threshold instead of
+                        comparing to a deviation about the average; default =
+                        0.05
+  -ld LEN_MAX_DEV, --len_max_dev LEN_MAX_DEV
+                        maximum allowed deviation of length from average value
+                        of the standard score in the moving window set by the
+                        span; default = 0.00
+  -fd FLIP_DEGREE, --flip_degree FLIP_DEGREE
+                        degree used in polynomial fit to determine correct
+                        orientation; default = 10
+  -fi FLIP_ITERS, --flip_iters FLIP_ITERS
+                        number of times to run flip-check procedure; default =
+                        3
+  -fs FLIP_SPAN, --flip_span FLIP_SPAN
+                        size of window used to check flips, over which the
+                        posture of the worm should be approximately constant;
+                        default = 20
+  -fl FLIP_MIN_DEV, --flip_min_dev FLIP_MIN_DEV
+                        minimum deviation of coefficients used to fit worm
+                        midline in moving window, below which the orientation
+                        is considered correct; default = 2.00
+  -fu FLIP_MAX_DEV, --flip_max_dev FLIP_MAX_DEV
+                        maximum deviation of coefficients used to fit worm
+                        midline in moving window, above which the orientation
+                        is considered flipped; default = 3.00</pre>
+</div>
+<p>To check the first 100 frames of an experiment in <tt class="docutils literal"><span class="pre">./properties</span></tt>
+using Nick&#8217;s midline and default parameters:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-p</span> <span class="pre">./properties</span> <span class="pre">-f</span> <span class="pre">0</span> <span class="pre">100</span></tt></p>
+<p>To check the frames 3000 through 4000 (inclusive), set the <tt class="docutils literal"><span class="pre">frame_range</span></tt>:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-f</span> <span class="pre">3000</span> <span class="pre">4001</span></tt></p>
+<p>To check every frame of an experiment using Marc&#8217;s midline, set the <tt class="docutils literal"><span class="pre">version</span></tt> flag = 1:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-v</span> <span class="pre">1</span></tt></p>
+<p>To use a more restrictive threshold for the length-check, decrease the maximum allowed deviations by setting <tt class="docutils literal"><span class="pre">len_max_val</span></tt>:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-lv</span> <span class="pre">0.02</span></tt></p>
+<p>To use a less restrictive threshold for the length-check, increase the maximum allowed deviation by setting <tt class="docutils literal"><span class="pre">len_max_val</span></tt>:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-lv</span> <span class="pre">0.1</span></tt></p>
+<p>To use the standard score instead of the fractional change in length, set <tt class="docutils literal"><span class="pre">len_max_dev</span></tt>:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-ld</span> <span class="pre">3.0</span></tt></p>
+<p>To change the window size used to check for bad midline lengths (e.g., to 10 min at a frame rate of 10 fps), set <tt class="docutils literal"><span class="pre">length_span</span></tt>:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-ls</span> <span class="pre">6000</span></tt></p>
+<p>To correct for head/tail flips without rejecting &#8220;indeterminate&#8221; frames, set <tt class="docutils literal"><span class="pre">flip_min_dev</span></tt> and <tt class="docutils literal"><span class="pre">flip_max_dev</span></tt> (the lower and upper thresholds, respectively) equal:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-fl</span> <span class="pre">3.0</span> <span class="pre">-fu</span> <span class="pre">3.0</span></tt></p>
+<p>To change the window size used to check for flips (e.g., to 3 sec at a frame rate of 10 fps), set <tt class="docutils literal"><span class="pre">flip_span</span></tt> to any integer &gt; 1:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-fs</span> <span class="pre">30</span></tt></p>
+<p>To check for flips by comparing just to the previous frame (calculating distances between points along a splined midline, instead of comparing the coefficients of the polynomial fit), set <tt class="docutils literal"><span class="pre">flip_span</span></tt> = 1:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">check</span> <span class="pre">-fs</span> <span class="pre">1</span></tt></p>
+</div>
+<div class="section" id="fit-to-smoothing-spline">
+<h2>Fit to smoothing spline<a class="headerlink" href="#fit-to-smoothing-spline" title="Permalink to this headline">¶</a></h2>
+<p>To view the help section for splining the data, type</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">--help</span></tt></p>
+<p>which will display:</p>
+<div class="highlight-python"><pre>usage: postprocess.py spline [-h] [-p PROPERTIES] [-f FRAME_RANGE FRAME_RANGE]
+                             [-v {0,1}] [-c] [-r] [-k] [-o OUTPUT]
+                             [-s SMOOTHING] [-n NUM_POINTS | -sp SPACING]
+                             [-l LENGTH]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PROPERTIES, --properties PROPERTIES
+                        properties directory; default = ./properties
+  -f FRAME_RANGE FRAME_RANGE, --frame_range FRAME_RANGE FRAME_RANGE
+                        frame range, given as [first frame, last frame);
+                        default = '0 inf'
+  -v {0,1}, --version {0,1}
+                        version of process code used to find midline (0 =
+                        Nick's, 1 = Marc's); default = 0
+  -c, --use_checks      include this flag to use info from various post-
+                        processing checks when calculating splines
+  -r, --reorient        include this flag to reorient tail-to-head any worms
+                        marked as incorrectly flipped; this flag will be
+                        ignored if the '--use_checks' flag is not used
+  -k, --keep_sides      include this flag to read the sidepaths and save a
+                        single splined worm outline to file
+  -o OUTPUT, --output OUTPUT
+                        name of directory and .mat file to save splined data;
+                        default = ./processed
+  -s SMOOTHING, --smoothing SMOOTHING
+                        level of smoothing in creating splined version of worm
+                        midline; should be of the order of the number of
+                        points in the midline; default = 25
+  -n NUM_POINTS, --num_points NUM_POINTS
+                        number of points in the each splined worm; default =
+                        100
+  -sp SPACING, --spacing SPACING
+                        distance between consecutive (x, y) points in each
+                        splined worm; this value is exclusive of the length
+                        and specifying it may result in splines with unequal
+                        numbers of points; default = 0.00
+  -l LENGTH, --length LENGTH
+                        desired length of each splined midline; if specified
+                        all splined worms will be approximately the same
+                        length (depending on whether a uniform number of
+                        points or spacing is given); default = 0.00</pre>
+</div>
+<p>To spline the first 100 frames of an experiment in <tt class="docutils literal"><span class="pre">./properties</span></tt>
+using Nick&#8217;s midline and default parameters, and without using any automatic
+corrections from the integrity checks:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">-f</span> <span class="pre">0</span> <span class="pre">100</span></tt></p>
+<p>To spline every frame using Marc&#8217;s midline without input from integrity checks:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">-v</span> <span class="pre">1</span></tt></p>
+<p>To include integrity checks (but ignore flips), just set the <tt class="docutils literal"><span class="pre">use_checks</span></tt> flag:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">-c</span></tt></p>
+<p>To include integrity checks (and automatically reorient tail-to-head flips), set both the <tt class="docutils literal"><span class="pre">use_checks</span></tt> and <tt class="docutils literal"><span class="pre">reorient</span></tt> flags:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">-cr</span></tt></p>
+<p>To also include sidepaths and worm areas, set the <tt class="docutils literal"><span class="pre">keep_sides</span></tt> flag:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">-crk</span></tt></p>
+<p>To make the spline smoother, increase the value of <tt class="docutils literal"><span class="pre">smoothing</span></tt>:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">-s</span> <span class="pre">50</span></tt></p>
+<p>To use half as many points in the midline, set the value of <tt class="docutils literal"><span class="pre">num_points</span></tt>:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">-n</span> <span class="pre">50</span></tt></p>
+<p>To use a spline in which the points are spaced an equal number of pixels apart (this will produce results with a non-uniform number of points across splines), set the <tt class="docutils literal"><span class="pre">spacing</span></tt>:</p>
+<p><tt class="docutils literal"><span class="pre">postprocess.py</span> <span class="pre">spline</span> <span class="pre">-sp</span> <span class="pre">5.0</span></tt></p>
+<p><em>Note:</em> if the sidepaths are also splined, they are automatically generated with twice the number of points in the midline, but with twice the smoothing factor (which should result in approximately the same amount of local smoothing).</p>
+</div>
+<div class="section" id="module-postprocess">
+<span id="postprocess-module"></span><h2><a class="reference internal" href="#module-postprocess" title="postprocess"><tt class="xref py py-mod docutils literal"><span class="pre">postprocess</span></tt></a> Module<a class="headerlink" href="#module-postprocess" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>This is the main script for post-processing. It can run in two modes:</dt>
+<dd><ol class="first last arabic simple">
+<li>check: run various checks on the output of PyCelegans</li>
+<li>spline: spline the worm midline and export to Matlab</li>
+</ol>
+</dd>
+</dl>
+<dl class="function">
+<dt id="postprocess.main">
+<tt class="descclassname">postprocess.</tt><tt class="descname">main</tt><big>(</big><em>inputs</em><big>)</big><a class="headerlink" href="#postprocess.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main function for accessing post-process functions.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>inputs: command line inputs</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-importdata">
+<span id="importdata-module"></span><h2><a class="reference internal" href="#module-importdata" title="importdata"><tt class="xref py py-mod docutils literal"><span class="pre">importdata</span></tt></a> Module<a class="headerlink" href="#module-importdata" title="Permalink to this headline">¶</a></h2>
+<p>Read output of PyCelegans used for further analysis: convert each midline to 
+a numpy array and calculate the distance along the midline from nose to tail.</p>
+<dl class="function">
+<dt id="importdata.getnosedist">
+<tt class="descclassname">importdata.</tt><tt class="descname">getnosedist</tt><big>(</big><em>nosetail</em><big>)</big><a class="headerlink" href="#importdata.getnosedist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate distance of each point along worm from nosetip.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>nosetail (dict): dict of numpy arrays of coordinates along midline</dd>
+<dt>returns:</dt>
+<dd><p class="first">nosedist (dict): dict of numpy arrays of distance from nose to tail</p>
+<p class="last">nosetail (dict): same as input, but with same set of keys as nosedist</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="importdata.main">
+<tt class="descclassname">importdata.</tt><tt class="descname">main</tt><big>(</big><em>path_name, frame_range=[0, inf], version=0</em><big>)</big><a class="headerlink" href="#importdata.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import midline and calculate distance from nose to tail.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>path_name (str): name of directory containing properties .txt files</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">frame_range (tuple): range of frames to read in given as [first, last)</p>
+<p class="last">version (int): version of PyCelegans process.py code output to use (0: 
+Nick Labello&#8217;s midline, 1: Marc Goessling&#8217;s midline)</p>
+</dd>
+<dt>returns:</dt>
+<dd><p class="first">nosedist (dict): dict of numpy arrays of distance from nose to tail</p>
+<p class="last">nosetail (dict): same as input, but with same set of keys as nosedist</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="importdata.readnosetail">
+<tt class="descclassname">importdata.</tt><tt class="descname">readnosetail</tt><big>(</big><em>path_name, frame_range=[0, inf], version=0</em><big>)</big><a class="headerlink" href="#importdata.readnosetail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read worm midline (assuming nose-to-tail), converting to numpy array.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>path_name (str): name of directory containing properties .txt files</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">frame_range (tuple): range of frames to read in given as [first, last)</p>
+<p class="last">version (int): version of PyCelegans process.py code output to use (0: 
+Nick Labello&#8217;s midline, 1: Marc Goessling&#8217;s midline)</p>
+</dd>
+<dt>returns:</dt>
+<dd>nosetail (dict): dict of numpy arrays of coordinates along midline</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-checklength">
+<span id="checklength-module"></span><h2><a class="reference internal" href="#module-checklength" title="checklength"><tt class="xref py py-mod docutils literal"><span class="pre">checklength</span></tt></a> Module<a class="headerlink" href="#module-checklength" title="Permalink to this headline">¶</a></h2>
+<p>This module checks the output of PyCelegans by calculating the average length of the worm midline over a sliding window, and rejecting frames whose length deviates significantly from this value.</p>
+<dl class="function">
+<dt id="checklength.checklength">
+<tt class="descclassname">checklength.</tt><tt class="descname">checklength</tt><big>(</big><em>nosedist</em>, <em>span=6000</em>, <em>max_dev=0.0</em>, <em>max_val=0.05</em><big>)</big><a class="headerlink" href="#checklength.checklength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove frames whose lengths do not fit the specified criteria: 
+1. Must fall within the specified number of standard deviations from the mean, calculated over a moving window 
+=&gt; set max_dev but not max_val
+2. Must fall within a constant value of the mean, calculated over a moving window
+=&gt; set max_val but not max_dev</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>nosedist (dict): dict of numpy arrays of distance from nose to tail</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">span (int): width of window</p>
+<p>max_dev (float): maximum allowed difference between Z-score of length</p>
+<p class="last">max_val (float): maximum allowed difference between length and average</p>
+</dd>
+<dt>returns:</dt>
+<dd>dict: dict of booleans specifying frames that pass or fail the test</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="checklength.main">
+<tt class="descclassname">checklength.</tt><tt class="descname">main</tt><big>(</big><em>nosedist</em>, <em>span=6000</em>, <em>max_dev=0.0</em>, <em>max_val=0.05</em><big>)</big><a class="headerlink" href="#checklength.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find frames where the length fails to meet specified criteria</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>nosedist (dict): dict of numpy arrays of distance from nose to tail</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">span (int): width of window</p>
+<p>max_dev (float): maximum allowed difference between Z-score of length</p>
+<p class="last">max_val (float): maximum allowed difference between length and average</p>
+</dd>
+<dt>returns:</dt>
+<dd>dict: dict of booleans specifying frames that pass or fail the test</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-flipheadtail">
+<span id="flipheadtail-module"></span><h2><a class="reference internal" href="#module-flipheadtail" title="flipheadtail"><tt class="xref py py-mod docutils literal"><span class="pre">flipheadtail</span></tt></a> Module<a class="headerlink" href="#module-flipheadtail" title="Permalink to this headline">¶</a></h2>
+<p>This module checks the output of PyCelegans by determining the frames where the nose has been incorrectly identified. Each worm midline is fit to a 
+polynomial, and the coefficients from each frame are compared to the
+average coefficients (calculated over a sliding window) to find frames
+where the posture deviates significantly from the local value. This process 
+is performed iteratively to account for outliers, but still relies upon the 
+assumption that the majority of the frames within the window are correct. However, if the span is just one frame, only calculate the distance between points along the worm between consecutive frames, identifying flips where this value is smaller where one of the frames has been flipped.</p>
+<dl class="function">
+<dt id="flipheadtail.checkflips">
+<tt class="descclassname">flipheadtail.</tt><tt class="descname">checkflips</tt><big>(</big><em>coefs_for</em>, <em>coefs_rev</em>, <em>span=20</em>, <em>min_dev=2.0</em>, <em>max_dev=3.0</em><big>)</big><a class="headerlink" href="#flipheadtail.checkflips" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check for nose-tail flips by comparing coefficients corresponding to worm
+oriented in forward and reverse direction. When a value exceeeds the 
+maximum specified deviation from the local window, flip the coefficients.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd><p class="first">coefs_for (dict): dict of coefficients corresponding to nose-to-tail</p>
+<p class="last">coefs_rev (dict): dict of coefficients corresponding to tail-to-nose</p>
+</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">span (int): number of points in final midline</p>
+<p>min_dev (float): spacing between points</p>
+<p class="last">max_dev (float): dict of desired lengths of each midline</p>
+</dd>
+<dt>returns:</dt>
+<dd><p class="first">coefs_for (dict): adjusted values of coefs_for</p>
+<p>coefs_rev (dict): adjusted values of coefs_rev</p>
+<p class="last">is_flipped (dict): dict of strings with values of 
+&#8216;False&#8217;: no flip (value &lt; min_dev) 
+&#8216;True&#8217;: yes flip (value &gt; max_dev) 
+&#8216;Indeterminate&#8217;: could not determine (min_dev &lt; value &lt; max_dev)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="flipheadtail.evalpolyfit">
+<tt class="descclassname">flipheadtail.</tt><tt class="descname">evalpolyfit</tt><big>(</big><em>coefs</em>, <em>num_points=100</em>, <em>spacing=None</em>, <em>lengths=None</em><big>)</big><a class="headerlink" href="#flipheadtail.evalpolyfit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the polynomial fit at discrete points.
+There are four options for constructing the spline:
+1) Same number of points, variable lengths, variable spacing
+=&gt; must specify only num_points (default)
+2) Variable number of points, variable lengths, same spacing
+=&gt; must specify only spacing
+3) Same number of points, same lengths, same spacing
+=&gt; must specify length and either spacing or num_points</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>coefs (dict): dict of coefficients (output of makepolyfit)</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">num_points (int): number of points in final midline</p>
+<p>spacing (int): spacing between points</p>
+<p class="last">lengths (dict): dict of desired lengths of each midline</p>
+</dd>
+<dt>returns:</dt>
+<dd><p class="first">nosedist (dict): dict of uniformly-sampled distances from nose to tail</p>
+<p class="last">nosetail (dict): dict of midlines evaluated using polynomial fit at 
+each point in the output nosedist</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="flipheadtail.main">
+<tt class="descclassname">flipheadtail.</tt><tt class="descname">main</tt><big>(</big><em>nosedist</em>, <em>nosetail</em>, <em>degree=10</em>, <em>num_iters=3</em>, <em>span=20</em>, <em>min_dev=2.0</em>, <em>max_dev=3.0</em>, <em>smoothing=25</em>, <em>num_points=100</em><big>)</big><a class="headerlink" href="#flipheadtail.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find frames where head/tail identification has failed by making a 
+polynomial representation of the worm and comparing the value of the 
+coefficients frame-by-frame to the average in a sliding window. If the size of the sliding window is set to just one frame however, do not fit to a polynomial but instead calculate the Euclidean distance between points along splined worms in consecutive frames, counting a flip if the norm between &#8216;forward&#8217; and &#8216;reverse&#8217; is smaller than between both &#8216;forward&#8217;.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd><p class="first">nosedist (dict): dict of numpy arrays of distance from nose to tail</p>
+<p class="last">nosetail (dict): dict of numpy arrays of coordinates along midline</p>
+</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">degree (int): degree of polynomial fit</p>
+<p>num_iters (int): number of times to repeat the head/tail flip check</p>
+<p>span (int): number of points in final midline</p>
+<p>min_dev (float): spacing between points</p>
+<p class="last">max_dev (float): dict of desired lengths of each midline</p>
+</dd>
+<dt>returns:</dt>
+<dd>is_flipped (dict): dict of strings with values of 
+&#8216;False&#8217;: no flip (value &lt; min_dev)
+&#8216;True&#8217;: yes flip (value &gt; max_dev)
+&#8216;Indeterminate&#8217;: could not determine (min_dev &lt; value &lt; max_dev)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="flipheadtail.makepolyfit">
+<tt class="descclassname">flipheadtail.</tt><tt class="descname">makepolyfit</tt><big>(</big><em>nosedist</em>, <em>nosetail</em>, <em>degree=10</em><big>)</big><a class="headerlink" href="#flipheadtail.makepolyfit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the midline to a polynomial.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd><p class="first">nosedist (dict): dict of numpy arrays of distance from nose to tail</p>
+<p class="last">nosetail (dict): dict of numpy arrays of coordinates along midline</p>
+</dd>
+<dt>kwargs:</dt>
+<dd>degree (int): degree of polynomial fit</dd>
+<dt>returns:</dt>
+<dd>dict: dict of coefficients, each of which is m X 2 array for m degrees</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-splinefit">
+<span id="splinefit-module"></span><h2><a class="reference internal" href="#module-splinefit" title="splinefit"><tt class="xref py py-mod docutils literal"><span class="pre">splinefit</span></tt></a> Module<a class="headerlink" href="#module-splinefit" title="Permalink to this headline">¶</a></h2>
+<p>Construct a uniformly-sampled B-spline of the worm, given the set of points running along the worm midline from nosetip to tailtip and the distance between each of those points.</p>
+<dl class="function">
+<dt id="splinefit.evalbspline">
+<tt class="descclassname">splinefit.</tt><tt class="descname">evalbspline</tt><big>(</big><em>tcks</em>, <em>num_points=100</em>, <em>spacing=0.0</em>, <em>lengths=None</em><big>)</big><a class="headerlink" href="#splinefit.evalbspline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the spline at discrete points.    
+There are three options for constructing the spline: 
+1) Same number of points, variable lengths, variable spacing 
+=&gt; must specify num_points (default) and each length 
+2) Variable number of points, variable lengths, same spacing 
+=&gt; must specify spacing and each length 
+3) Same number of points, same lengths, same spacing 
+=&gt; must specify all same length and either spacing or num_points</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>tcks (dict): dict of spline fit (knots, coefs, degree)</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">num_points (int): number of points in final midline</p>
+<p>spacing (int): spacing between points</p>
+<p class="last">lengths (dict): dict of desired lengths of each midline</p>
+</dd>
+<dt>returns:</dt>
+<dd><p class="first">nosedist (dict): dict of uniformly-sampled distances from nose to tail</p>
+<p class="last">nosetail (dict): dict of midlines evaluated using polynomial fit at 
+each point in the output nosedist</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="splinefit.main">
+<tt class="descclassname">splinefit.</tt><tt class="descname">main</tt><big>(</big><em>us</em>, <em>vs</em>, <em>smoothing=25</em>, <em>num_points=100</em>, <em>spacing=0.0</em>, <em>length=0.0</em>, <em>per=0</em><big>)</big><a class="headerlink" href="#splinefit.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the worm to a smoothing B-spline.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd><p class="first">us (array): euclidean distance between points</p>
+<p class="last">vs (array): array of (x, y) points</p>
+</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">smoothing (int): smoothing</p>
+<p>num_points (int): number of points in final midline</p>
+<p>spacing (int): spacing between points</p>
+<p>lengths (dict): dict of desired lengths of each midline</p>
+<p class="last">per (int): set non-zero for a closed spline, i.e., periodic b.c.</p>
+</dd>
+<dt>returns:</dt>
+<dd><p class="first">nosedist (dict): dict of uniformly-sampled distances from nose to tail</p>
+<p class="last">nosetail (dict): dict of midlines evaluated using polynomial fit at 
+each point in the output nosedist</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="splinefit.makebspline">
+<tt class="descclassname">splinefit.</tt><tt class="descname">makebspline</tt><big>(</big><em>us</em>, <em>vs</em>, <em>s=25</em>, <em>per=0</em><big>)</big><a class="headerlink" href="#splinefit.makebspline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the a series of (x, y) coordinates to a smoothing B-spline.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd><p class="first">us (array): euclidean distance between points</p>
+<p class="last">vs (array): array of (x, y) points</p>
+</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">s (int): smoothing</p>
+<p class="last">per (int): set non-zero for a closed spline, i.e., periodic boundary
+conditions (default = 0)</p>
+</dd>
+<dt>returns:</dt>
+<dd>dict: dict of spline fit (knots, coefs, degree)</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-calc">
+<span id="calc-module"></span><h2><a class="reference internal" href="#module-calc" title="calc"><tt class="xref py py-mod docutils literal"><span class="pre">calc</span></tt></a> Module<a class="headerlink" href="#module-calc" title="Permalink to this headline">¶</a></h2>
+<p>This module contains miscellaneous functions for time series data analysis.</p>
+<dl class="function">
+<dt id="calc.fullmovingavg">
+<tt class="descclassname">calc.</tt><tt class="descname">fullmovingavg</tt><big>(</big><em>data</em>, <em>span=5</em><big>)</big><a class="headerlink" href="#calc.fullmovingavg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Moving average, padded on ends with original data.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>data (iterable): data sequence (1D)</dd>
+<dt>kwargs:</dt>
+<dd>span (int): width of window</dd>
+<dt>returns:</dt>
+<dd>list: output of func applied to data over the sliding window is a list  
+of the same size as the input data, where instead of padding the ends 
+of the output, the average is calculated but over a smaller window 
+until reaching the ends of the sequence</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="calc.moving">
+<tt class="descclassname">calc.</tt><tt class="descname">moving</tt><big>(</big><em>data</em>, <em>func=&lt;function mean at 0x10de0bd70&gt;</em>, <em>span=5</em><big>)</big><a class="headerlink" href="#calc.moving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the value of the function in a moving (sliding) window.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>data (iterable): data sequence (1D)</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">func: name of function (default = np.mean)</p>
+<p class="last">span (int): width of window</p>
+</dd>
+<dt>returns:</dt>
+<dd>list: output of func applied to data over the sliding window is a list 
+of the same size as the input data, where the ends are padded with the 
+first and last values of the input data</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="calc.window">
+<tt class="descclassname">calc.</tt><tt class="descname">window</tt><big>(</big><em>seq</em>, <em>n=2</em><big>)</big><a class="headerlink" href="#calc.window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a sliding window (of width n) over data from the iterable
+s -&gt; (s0,s1,...s[n-1]), (s1,s2,...,sn), ...
+From itertools examples.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>seq (iterable): data sequence</dd>
+<dt>kwargs:</dt>
+<dd>n (int): width of window (default = 2)</dd>
+<dt>returns:</dt>
+<dd>iter: sliding window</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-parseargs">
+<span id="parseargs-module"></span><h2><a class="reference internal" href="#module-parseargs" title="parseargs"><tt class="xref py py-mod docutils literal"><span class="pre">parseargs</span></tt></a> Module<a class="headerlink" href="#module-parseargs" title="Permalink to this headline">¶</a></h2>
+<p>This module creates the argument parser for accepting command line inputs.</p>
+<dl class="function">
+<dt id="parseargs.addchecklength">
+<tt class="descclassname">parseargs.</tt><tt class="descname">addchecklength</tt><big>(</big><em>parser</em><big>)</big><a class="headerlink" href="#parseargs.addchecklength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add arguments to parser for checklength.py</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="parseargs.addflipheadtail">
+<tt class="descclassname">parseargs.</tt><tt class="descname">addflipheadtail</tt><big>(</big><em>parser</em><big>)</big><a class="headerlink" href="#parseargs.addflipheadtail" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add arguments to parser for flipheadtail.py</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="parseargs.addimportdata">
+<tt class="descclassname">parseargs.</tt><tt class="descname">addimportdata</tt><big>(</big><em>parser</em><big>)</big><a class="headerlink" href="#parseargs.addimportdata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add arguments to parser for importdata.py</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="parseargs.addsplinefit">
+<tt class="descclassname">parseargs.</tt><tt class="descname">addsplinefit</tt><big>(</big><em>parser</em><big>)</big><a class="headerlink" href="#parseargs.addsplinefit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add arguments to parser for splinefit.py</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="parseargs.main">
+<tt class="descclassname">parseargs.</tt><tt class="descname">main</tt><big>(</big><em>inputs</em><big>)</big><a class="headerlink" href="#parseargs.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-readwrite">
+<span id="readwrite-module"></span><h2><a class="reference internal" href="#module-readwrite" title="readwrite"><tt class="xref py py-mod docutils literal"><span class="pre">readwrite</span></tt></a> Module<a class="headerlink" href="#module-readwrite" title="Permalink to this headline">¶</a></h2>
+<p>This module contains functions for reading and writing PyCelegans output data.</p>
+<dl class="function">
+<dt id="readwrite.readtxt">
+<tt class="descclassname">readwrite.</tt><tt class="descname">readtxt</tt><big>(</big><em>path_name</em>, <em>parameter</em>, <em>frame_range=(0</em>, <em>inf)</em>, <em>data_type=&lt;type 'float'&gt;</em><big>)</big><a class="headerlink" href="#readwrite.readtxt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read data from text file, e.g., .txt output of collectoutput.py.
+The expected input format is that each line contains data separated by 
+commas, with the first value corresponding to the frame number.
+The output is a dictionary with keys corresponding to frame numbers
+and values corresponding to the data contained in each line.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd><p class="first">path_name (str): name of directory containing properties .txt files</p>
+<p class="last">parameter (str): name of parameter (file name minus extension)</p>
+</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">frame_range (tuple): range of frames to read in given as [first, last)
+will read in all data from file)</p>
+<p class="last">data_type: expected data type</p>
+</dd>
+<dt>returns:</dt>
+<dd>dict: dict of values; keys are frame numbers</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="readwrite.reformat">
+<tt class="descclassname">readwrite.</tt><tt class="descname">reformat</tt><big>(</big><em>data_dict</em><big>)</big><a class="headerlink" href="#readwrite.reformat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reformat data dictionary for saving to Matlab. Convert all dictionaries
+to lists, and construct a new value called frames that corresponds to
+the full set of keys for each variable.</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd>data_dict: dict of dicts</dd>
+<dt>returns:</dt>
+<dd>dict: dict of lists</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="readwrite.savemat">
+<tt class="descclassname">readwrite.</tt><tt class="descname">savemat</tt><big>(</big><em>file_name</em>, <em>data_dict</em><big>)</big><a class="headerlink" href="#readwrite.savemat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reformat so that dictionaries become lists and save to .mat file. 
+Input is dictionary of values, i.e., {&#8216;midline&#8217;:..., &#8216;nosetip&#8217;:..., }</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd><p class="first">file_name (str): name of .mat file to save data</p>
+<p class="last">data_dict (dict): dict of dicts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="readwrite.writetxt">
+<tt class="descclassname">readwrite.</tt><tt class="descname">writetxt</tt><big>(</big><em>path_name</em>, <em>parameter</em>, <em>data_dict</em>, <em>frames=</em><span class="optional">[</span><span class="optional">]</span>, <em>data_format='%0.1f'</em><big>)</big><a class="headerlink" href="#readwrite.writetxt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to text file. The exact inverse of the read function.
+The inputs are the parameter name (while determines the file name)
+and the data dictionary, and a string describing how to convert
+the data values to text (e.g., %0.4f for float, %r for boolean).</p>
+<dl class="docutils">
+<dt>args:</dt>
+<dd><p class="first">path_name (str): name of directory containing properties .txt files</p>
+<p>parameter (str): name of parameter (file name minus extension)</p>
+<p class="last">data_dict (dict): dict of values; keys are frame numbers</p>
+</dd>
+<dt>kwargs:</dt>
+<dd><p class="first">frames (list): list of frames to write to file. If the data_dict does 
+not have a key corresponding to each frame in this list then an 
+error (-1) will be written. If this input is empty, all values 
+from data_dict will be written</p>
+<p class="last">data_format: how to format each value to string</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">PyCelegans PostProcess Documentation</a><ul>
+<li><a class="reference internal" href="#overview-and-usage">Overview and Usage</a></li>
+<li><a class="reference internal" href="#run-integrity-checks">Run integrity checks</a></li>
+<li><a class="reference internal" href="#fit-to-smoothing-spline">Fit to smoothing spline</a></li>
+<li><a class="reference internal" href="#module-postprocess"><tt class="docutils literal"><span class="pre">postprocess</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-importdata"><tt class="docutils literal"><span class="pre">importdata</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-checklength"><tt class="docutils literal"><span class="pre">checklength</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-flipheadtail"><tt class="docutils literal"><span class="pre">flipheadtail</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-splinefit"><tt class="docutils literal"><span class="pre">splinefit</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-calc"><tt class="docutils literal"><span class="pre">calc</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-parseargs"><tt class="docutils literal"><span class="pre">parseargs</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-readwrite"><tt class="docutils literal"><span class="pre">readwrite</span></tt> Module</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">PyCelegans PostProcess 0.5.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Charlie Wright.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
