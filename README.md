@@ -24,5 +24,5 @@ This code is an ongoing research project.  You are encouraged to contact us
 before installing it.
 
 The requirements to run the code are a Python 2.7 environment and the addons
-NumPy, SciPy, PyMorph, and Scikits-Image. MPI4Py is required for multi-node
+NumPy, SciPy, PyMorph, Scikits-Image, and Cython. MPI4Py is required for multi-node
 parallelism.
